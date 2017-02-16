@@ -1,0 +1,27 @@
+{
+  "name": "flip-card-board",
+  "main": "flip-card-board.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#2.0-preview",
+    "flip-card": "Flip-Card#*",
+    "paper-dialog": "polymerelements/paper-dialog#2.0-preview",
+    "iron-icons": "polymerelements/iron-icons#2.0-preview"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "homepage": "https://github.com/MarkJamesHoward/flip-card-board",
+  "_release": "7646a524b1",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "7646a524b154604ca706e15fe8bba4acbc81e792"
+  },
+  "_source": "https://github.com/MarkJamesHoward/flip-card-board.git",
+  "_target": "*",
+  "_originalSource": "MarkJamesHoward/flip-card-board",
+  "_direct": true
+}

@@ -1,0 +1,596 @@
+<link rel="import" href="../polymer/polymer-element.html"/ >
+<link rel="import" href="../flip-card/flip-card.html" />
+<link rel="import" href="../iron-icons/iron-icons.html" />
+<link rel="import" href="../paper-dialog/paper-dialog.html" />
+<link rel="stylesheet" href="../../fireworks.css">
+
+<dom-module id="flip-card-board">
+  <template>
+    <style>
+
+    @keyframes bounce {
+      0% {font-size: 3em;}
+      30% {font-size: 5em;color:red;}
+      60% {font-size: 4em;}
+      90% {font-size: 4.5em;color: blue;}
+      100% {font-size: 3em;}
+    }
+
+      :host {
+        display: block;
+      }
+       * {
+        box-sizing: border-box;
+      }
+      .remove {
+        opacity: 0.1;
+      }
+      flip-card {
+        transition: opacity 2s ease;
+         margin: 3px;
+         position: relative;
+      }
+
+      .animateScore {
+        animation: bounce 1s ease;
+      }
+
+      #container {
+        width: 100%;
+        height: 80%;
+        display: grid;
+        grid-template-rows: 25% 25% 25% 25%;
+        grid-template-columns: 20% 20% 20% 20% 20%;
+        grid-column-align: center;
+        grid-row-align: center;  
+      }
+
+      .item1 {
+        grid-column: 1;
+        grid-row: 1;
+      }
+
+      .item2 {
+        grid-column: 2;
+        grid-row: 1;
+      }
+
+      .item3 {
+        grid-column: 3;
+        grid-row: 1;
+      }
+
+      .item4 {
+        grid-column: 4;
+        grid-row: 1;
+      }
+        
+      .inactivePlayer {
+         display: flex;
+         border-radius: 10px;
+        flex-direction: column;
+        transition: all 2s ease;
+        background-color:aliceblue;
+        flex-grow: 1;
+        margin-right: 2px;
+      }
+
+      .activePlayer {  
+        transition: all 2s ease;
+        background-color: lightsalmon;
+      }
+
+      #players {
+        display: flex;
+        justify-content: space-between;
+        /*align-items: center;*/
+        height:20%;
+        margin: 0;
+        padding: 0;
+      }
+
+      #players h1, #players h3 {
+        text-align: center;
+      }
+
+      .largeButton {
+        font-size: 24px;
+        margin-right: 10px;
+        height: 100%;
+      }  
+
+      .itemScore {
+        font-size:45px;
+        position:absolute;
+        top: 50%;
+        left: 50%;
+        background-color: white;
+      }
+
+      .invisible {
+        display: none;
+      }
+
+      .largeText {
+        font-size: 2em;
+        width:100%;
+        text-align: center;
+      }
+
+      .winnerText {
+        position: absolute;
+        left: -800px;
+        top: 40%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 3em;
+        background-color: orange;
+        border-radius: 20px;
+        padding: 0.2em;
+        flex-direction: column;
+        transition: all 0.5s ease-out;
+        z-index:100;
+      }
+
+      .points {
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        width: 100%;
+        z-index: 200;
+      }
+
+      .points > div {
+        font-size:3em;
+        background-color: white;
+        border-radius:0.1em;
+        text-align: center;
+        color: pink;
+        width: 20%;
+      }
+
+      .hidePoints {
+        visibility: hidden;
+        opacity: 0;
+        transition: all 1s ease;
+      }
+
+      input {
+        background-color: lightsalmon;
+      }
+
+      #EnterName1Dialog, #EnterName2Dialog {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+   
+      .scoreValue {
+        font-size: 3em;
+      }
+
+      .winnerText > button {
+        font-size: 2rem;
+        color: white;
+        background: linear-gradient(-90deg, red, darkred);
+      }
+    </style>
+
+      <!--<div id="points" class="points hidePoints">
+        <div>+5</div>
+      </div>-->
+
+      <paper-dialog id="EnterName1Dialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+          <h2 style="margin:0">Enter name for Player1</h2>
+          <input style="margin:0" type="text" value="{{player1Name::change}}"  id="player1NameInput" />
+          <button on-click="closeDialog">Update</button>
+      </paper-dialog>
+
+      <paper-dialog id="EnterName2Dialog" entry-animation="scale-up-animation" exit-animation="fade-out-animation" with-backdrop>
+          <h2 style="margin:0">Enter name for Player1</h2>
+          <input style="margin:0" type="text" value="{{player2Name::change}}" id="player2NameInput" />
+          <button on-click="closeDialog">Update</button>
+      </paper-dialog>
+
+     <div id="player1Winner" class="winnerText">
+        <div>{{player1Name}} Wins!</div>
+        <button on-click="startNewGame">New Game</button>
+      </div>
+
+      <div id="player2Winner" class="winnerText">
+        <div>{{player2Name}} Wins!</div>
+        <button on-click="startNewGame">New Game</button>
+      </div>
+
+    <div id="players">
+      <div id="player1Score" class="inactivePlayer activePlayer">
+          <div style="display:flex; justify-content: center; align-items: center;">
+            <h2 class="largeText">{{player1Name}}</h2>
+            <iron-icon icon="icons:more-horiz" on-click="enterPlayer1Name"></iron-icon>
+          </div>
+        <h3><span id="scoreAnimation1" class="scoreValue"> {{player1Score}} </span></h3>
+      </div>
+
+      <div id="player2Score" class="inactivePlayer">
+        <div style="display: flex; justify-content: center;align-items: center">
+          <h2 class="largeText">{{player2Name}}</h2>
+          <iron-icon icon="icons:more-horiz" on-click="enterPlayer2Name"></iron-icon>
+        </div>
+        <h3><span id="scoreAnimation2" class="scoreValue"> {{player2Score}} </span></h3>
+      </div>
+    </div>
+
+    <div id="container">
+
+      <flip-card on-click="cardViewed" class="item1">
+        <img id='item1img'  style="width: 100%; height: 100%;border-radius:5px;"  src=""></img>
+        <span  class="item1Score invisible">+5</span>
+      </flip-card>
+      
+      <flip-card on-click="cardViewed" class="item2">
+        <img id='item2img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+      <flip-card on-click="cardViewed" class="item3">        
+        <img id='item3img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+      <flip-card on-click="cardViewed" class="item4">        
+        <img id='item4img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+      <flip-card on-click="cardViewed" class="item5">        
+        <img id='item5img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+      <flip-card on-click="cardViewed" class="item6">
+          <img id='item6img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+      <flip-card on-click="cardViewed" class="item7">
+        <img id='item7img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+      <flip-card on-click="cardViewed" class="item8">
+        <img id='item8img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+      <flip-card on-click="cardViewed" class="item9">
+        <img id='item9img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+      <flip-card on-click="cardViewed" class="item10">
+        <img id='item10img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+      <flip-card on-click="cardViewed" class="item11">
+        <img id='item11img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+      <flip-card on-click="cardViewed" class="item12">
+        <img id='item12img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+      <flip-card on-click="cardViewed" class="item13">
+        <img id='item13img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+       <flip-card on-click="cardViewed" class="item14">
+        <img id='item14img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+       <flip-card on-click="cardViewed" class="item15">
+        <img id='item15img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+       <flip-card on-click="cardViewed" class="item16">
+        <img id='item16img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+       <flip-card on-click="cardViewed" class="item17">
+        <img id='item17img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+       <flip-card on-click="cardViewed" class="item18">
+        <img id='item18img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+       <flip-card on-click="cardViewed" class="item19">
+        <img id='item19img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+       <flip-card on-click="cardViewed" class="item20">
+        <img id='item20img' style="width: 100%; height: 100%;border-radius:5px;" src=""></img>
+      </flip-card>
+
+      <div class="pyro">
+        <div class="before"></div>
+        <div class="after"></div>
+      </div>
+
+            
+    </div>
+
+  </template>
+</dom-module>
+
+<script>
+  
+  class FlipCardBoard extends Polymer.Element {
+
+    constructor() {
+      super();
+      this.allowNewSelection = true;
+      this.numCardsFlipped = 0;
+      this.activePlayer = "player1";
+      this.player1Score = 0;
+      this.player2Score = 0;
+      this.cardsFound = 0;
+      this.removedCards = [];
+      this.player1Name = "player1";
+      this.player2Name = "player2";
+    }
+
+    static get config(){ 
+      return {
+        properties: {
+          player1Name : {type: String, notify: true},
+          player2Name: {type: String, notify: true},
+          player1Score : {type: Number},
+          player2Score : {type: Number},
+          activePlayer: {type: String},
+          card1Selected: {type: Object},
+          card2Selected: {type: Object},
+          numCardsFlipped: {type: Number},
+          allowNewSelection: {type: Boolean}
+        }
+      }
+    }
+
+    startNewGame() {
+       for (let node of this.removedCards) {
+         node.classList.remove('remove');
+         node.FlipMe();
+       }
+       this.player1Score = 0;
+       this.player2Score = 0;
+       this.numCardsFlipped = 0;
+       this.cardsFound = 0;
+
+       this.activePlayer = "player1";
+       this.$.player2Score.classList.remove();
+
+       this.removeWinner();
+       this.setup();
+
+    }
+
+    removeWinner() {
+      this.$.player1Winner.style.left ='-800px';
+      this.$.player2Winner.style.left ='-800px';
+    }
+
+    DisplayWinner(player) {
+    
+      if (this.cardsFound === 20)
+      {
+        if (player === "player1") {
+                console.log('display winner text for player 1')
+                this.$.player1Winner.style.left ='40%';
+              }
+        else {
+           console.log('display winner text for player 2')
+                this.$.player2Winner.style.left =  '40%';
+        }
+    }
+    }
+
+    CheckIfMatchMade() {
+      console.log(this.card1Selected.firstElementChild.getAttribute('style="width: 100%; height: 100%;border-radius:5px;" src'));
+      console.log(this.card2Selected.firstElementChild.getAttribute('style="width: 100%; height: 100%;border-radius:5px;" src'));
+
+      if (this.card1Selected.firstElementChild.getAttribute("src") 
+      === this.card2Selected.firstElementChild.getAttribute("src")) {
+            console.log('matched!');
+
+            this.cardsFound = this.cardsFound + 2;
+
+            // Keep a record of these cards so that we can make
+            // them visible again to start a new game.
+            this.removedCards.push(this.card1Selected);
+            this.removedCards.push(this.card2Selected);
+
+
+            this.card1Selected.childNodes[1].classList.remove('invisible');
+
+            if (this.activePlayer === "player1") {
+             
+              this.player1Score += 5;
+              this.$.scoreAnimation1.classList.add('animateScore');
+
+              setTimeout( () => {
+              this.card1Selected.classList.add('remove');
+              this.card2Selected.classList.add('remove');
+              this.card1Selected = null;
+              this.card2Selected = null;
+              this.allowNewSelection = true;
+              this.DisplayWinner("player1");             
+              this.$.scoreAnimation1.classList.remove('animateScore');
+
+              }, 1000);
+            }
+            else {
+             
+              this.player2Score += 5;
+              this.$.scoreAnimation2.classList.add('animateScore');
+
+                setTimeout( () => {
+              this.card1Selected.classList.add('remove');
+              this.card2Selected.classList.add('remove');
+              this.card1Selected = null;
+              this.card2Selected = null;
+              this.allowNewSelection = true;
+              this.DisplayWinner("player2");
+              this.$.scoreAnimation2.classList.remove('animateScore');
+              }, 1000);
+
+            }
+          }
+          else {
+            setTimeout( () => {
+            this.card1Selected.FlipMe();
+            this.card2Selected.FlipMe();
+            this.card1Selected = null;
+            this.card2Selected = null;
+            this.allowNewSelection = true;
+            this.MoveToNextPlayer();
+            }, 2000);
+        } 
+        
+    }
+          
+    MoveToNextPlayer() {
+      if (this.activePlayer === "player1") {
+          this.activePlayer = "player2";
+          this.$.player1Score.classList.toggle('activePlayer')
+          this.$.player2Score.classList.toggle('activePlayer')
+        }
+        else {
+          this.activePlayer = "player1";
+          this.$.player2Score.classList.toggle('activePlayer')
+          this.$.player1Score.classList.toggle('activePlayer')
+        }
+    }
+
+    closeDialog() {
+      this.$.EnterName1Dialog.close();
+      this.$.EnterName2Dialog.close();
+    }
+
+    enterPlayer1Name() {
+      this.$.EnterName1Dialog.open();
+    }
+
+    enterPlayer2Name() {
+      this.$.EnterName2Dialog.open();
+    }
+
+    cardViewed(e) {
+
+      if (this.card1Selected != null) {
+        if (this.card1Selected.firstElementChild === e.target) {
+          console.log('Card1 selected again!');
+          return;
+        }
+      }
+        
+    if (this.card2Selected != null) {
+          if (this.card2Selected.firstElementChild === e.target) {
+            console.log('Card2 selected again!');
+            return;
+          }
+    }
+        
+
+      if (this.allowNewSelection === false) {
+        console.log('no more selections allowed!');
+        return;
+      }
+
+      //Record that a card is flipped
+      this.numCardsFlipped++;
+
+      // If this is the first card flipped then ensure it does not flip back (pass false)
+      if (this.numCardsFlipped === 1) {
+        this.card1Selected = e.target;
+        e.target.FlipMe(false);
+      }
+      else  {
+        this.card2Selected = e.target;
+        this.allowNewSelection = false;
+        e.target.FlipMe(false);
+        this.numCardsFlipped = 0;
+        this.CheckIfMatchMade();
+      }
+    }
+
+    generateCards(image, usedCards) {
+
+      let validNumber = false;
+      let num1 = 0;
+      let num2 = 0;
+
+      while (validNumber === false) {
+        validNumber = true;
+        num1 = Math.floor((Math.random() * 20) + 1)
+
+        for(let index = 0; index < usedCards.length; index++)
+        {
+          //console.log('checking ' + index)
+          if (usedCards[index] === num1)
+            validNumber = false;
+        }
+      }
+
+      usedCards.push(num1);
+      validNumber = false;
+
+      while (validNumber === false) {
+        validNumber = true;
+        num2 = Math.floor((Math.random() * 20) + 1)
+
+        for(let index = 0; index < usedCards.length; index++)
+        {
+          if (usedCards[index] === num2)
+            validNumber = false;
+        }
+
+      }
+      
+      usedCards.push(num2);
+
+      //Do rogue
+      let card1 = '#item' + num1 + 'img';
+      let card2 = '#item' + num2 + 'img';
+
+      //console.log(card1);
+      let nodeCard1 = this.shadowRoot.querySelector(card1);
+      nodeCard1.setAttribute("src",`./images/${image}.jpg`);
+
+      //console.log(card2);
+      let nodeCard2 = this.shadowRoot.querySelector(card2);
+      nodeCard2.setAttribute("src",`./images/${image}.jpg`);
+
+    }
+
+    static get is() {
+      return 'flip-card-board';
+    }
+
+    setup() {
+       let usedCards = [];
+      this.generateCards('rogue', usedCards);
+      this.generateCards('moo', usedCards);
+      this.generateCards('heady', usedCards);
+      this.generateCards('kong', usedCards);
+      this.generateCards('minion', usedCards);
+      this.generateCards('moo', usedCards);
+      this.generateCards('minion', usedCards);
+      this.generateCards('bear', usedCards);
+      this.generateCards('kong', usedCards);
+      this.generateCards('GuooGuoo', usedCards);
+    }
+
+    connectedCallback() {
+      super.connectedCallback();
+      this.setup();
+    }
+  }
+
+  customElements.define(FlipCardBoard.is, FlipCardBoard);
+
+</script>
+

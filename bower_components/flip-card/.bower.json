@@ -1,0 +1,24 @@
+{
+  "name": "flip-card",
+  "description": "3d flip card",
+  "main": "flip-card.html",
+  "dependencies": {
+    "polymer": "Polymer/polymer#2.0-preview"
+  },
+  "devDependencies": {
+    "iron-component-page": "PolymerElements/iron-component-page#^1.0.0",
+    "iron-demo-helpers": "PolymerElements/iron-demo-helpers#^1.0.0",
+    "web-component-tester": "^4.0.0",
+    "webcomponentsjs": "webcomponents/webcomponentsjs#^0.7.0"
+  },
+  "homepage": "https://github.com/MarkJamesHoward/Flip-Card",
+  "_release": "7628d089d0",
+  "_resolution": {
+    "type": "branch",
+    "branch": "master",
+    "commit": "7628d089d0eac2ff328b23d1ab5b65ab56094575"
+  },
+  "_source": "https://github.com/MarkJamesHoward/Flip-Card.git",
+  "_target": "*",
+  "_originalSource": "Flip-Card"
+}
